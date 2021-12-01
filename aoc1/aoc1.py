@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Created on Wed Dec  1 09:27:07 2021
 
-This is a temporary script file.
+@author: robertnolet
 """
+
 
 data = [int(x) for x in open('input.txt')]
 
