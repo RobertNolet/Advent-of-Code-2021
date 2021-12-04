@@ -27,15 +27,13 @@ numbers = [int(n) for n in file.readline().split(',')]
 boards = [Board(file) for line in file] # line is the newline before each board
 
 # Play
-score1 = None   # Score of first winning board
+scores = []
 for n in numbers:
     for b in boards:
-        if not b.won:
-            b.mark(n)
-            if b.won:
-                score2 = b.score()*n
-                if not score1:
-                    score1 = score2
+        if b.won: continue
+        b.mark(n)
+        if b.won:
+            scores.append(b.score()*n)
                 
 # Print scores of first and last winning boards
-print(score1, score2)
+print(scores[0], scores[-1])
