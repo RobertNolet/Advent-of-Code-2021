@@ -12,7 +12,7 @@ data = [int(n) for n in open('input.txt').readline().split(',')]
 
 # Part 1
 m = int(median(data))
-print(sum(abs(x - m) for x in data))
+print(sum(abs(x-m) for x in data))
 
 # Part 2
 m = int(mean(data))
