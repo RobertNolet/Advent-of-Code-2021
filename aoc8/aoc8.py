@@ -45,8 +45,8 @@ for signal, output in data:
     mapping[9] = a|b|c|d|f|g
     
     # Translate output and add to result
-    for i, q in enumerate(output):
-        result += mapping.index(set(q))*10**(3-i) 
+    for i, p in enumerate(output):
+        result += mapping.index(p)*10**(3-i) 
 print(result)    
     
     
