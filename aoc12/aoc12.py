@@ -12,14 +12,14 @@ for a, b in data:
     conn[a] = conn.get(a, []) + [b]
     conn[b] = conn.get(b, []) + [a]
     
-def numroutes(x, visits, revisit = False):
+def numroutes(x, v, revisit = False):
+    if x == 'end': return 1
     n = 0
     for y in conn[x]:
-        if y == 'end': n += 1
-        elif y.isupper() or y not in visits or (revisit and y != 'start'):
-            v = visits.copy()
+        if y.isupper() or v.get(y,0) == 0 or (revisit and y != 'start'):
             v[y] = v.get(y,0)+1
             n += numroutes(y, v, revisit and (y.isupper() or v[y] == 1))
+            v[y] -= 1
     return n
 
 # Part 1
