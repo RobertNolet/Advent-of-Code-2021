@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Dec 18 10:24:05 2021
+
+@author: robertnolet
+"""
+
+from functools import reduce
+from itertools import product
+
+# The leaves of the tree, containing the numbers. Each node also keeps 
+# track of its left and right neighbours for easy exploding.       
+class SnailNumber:
+    def __init__(self, value, left = None):
+        self.left = left
+        self.right = None
+        if left: left.right = self
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+        
+    def split(self):
+        if self.value > 9:
+            a = SnailNumber(self.value // 2, self.left)
+            b = SnailNumber(self.value - a.value, a)
+            b.right = self.right
+            if (b.right): b.right.left = b
+            return SnailPair(a, b), True
+        return self, False
+    
+    def magnitude(self):
+        return self.value
+    
+# A nodes of the tree, each pairs consists of a left (a) and right (b) member,
+# which can be either SnailNumbers or SnailPairs. 
+class SnailPair:
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+    
+    def __add__(self, other):
+        # Combine order of leaves
+        self.rightmost().right = other.leftmost()
+        other.leftmost().left = self.rightmost()
+        # Make a new pair and reduce it
+        result = SnailPair(self, other)
+        result.reduce()
+        return result
+    
+    def __str__(self):
+        return f"[{str(self.a)},{str(self.b)}]"
+    
+    def leftmost(self):
+        if type(self.a) == SnailNumber: return self.a
+        return self.a.leftmost()
+
+    def rightmost(self):
+        if type(self.b) == SnailNumber: return self.b
+        return self.b.rightmost()
+    
+    # Try to explode a node or pass the explode command down the tree.
+    # It returns a replacement node and a boolean stating whether something
+    # exploded or not.
+    def explode(self, depth = 0):
+        if depth == 4:
+            # We're exploding! Make a new leaf and fix leaf connections.
+            n = SnailNumber(0, self.a.left)
+            n.right = self.b.right
+            if (self.a.left): 
+                self.a.left.value += self.a.value
+                self.a.left.right = n
+            if (self.b.right): 
+                self.b.right.value += self.b.value
+                self.b.right.left = n
+            return n, True
+        if type(self.a) == SnailPair:
+            repl, cont = self.a.explode(depth+1)
+            if cont: 
+                self.a = repl
+                return self, True
+        if type(self.b) == SnailPair:
+            repl, cont = self.b.explode(depth+1)
+            if cont:
+                self.b = repl
+                return self, True
+        return self, False
+    
+    # To to split a leaf or pass the split command down the tree.
+    # It returns a replacement node and a boolean whether something was split.
+    def split(self):
+        repl, cont = self.a.split()
+        if cont:
+            self.a = repl
+            return self, True
+        repl, cont = self.b.split()
+        if cont:
+            self.b = repl
+            return self, True
+        return self, False
+    
+    # Explode and split until nothing can be exploded or split.    
+    def reduce(self):
+        cont = True
+        while cont:
+            p, cont = self.explode()
+            if not cont:  p, cont = self.split()
+    
+    # Values of the leaves for debugging purposes.
+    def values(self):
+        x = self.leftmost()
+        result = [x.value]
+        while x.right:
+            x = x.right
+            result.append(x.value)
+        return result
+    
+    def magnitude(self):
+        return 3*self.a.magnitude() + 2*self.b.magnitude()
+
+# Parse a SnailPair from an iterator of characters.        
+def parse(i, last = None):
+    c = next(i)
+    if c.isnumeric():
+        n = SnailNumber(int(c), last)
+        return n, n
+    elif c == '[':
+        a, last = parse(i, last)
+        c = next(i)
+        if c != ',': print(f"Parse error: expected ',' but found '{c}'.")
+        b, last = parse(i,last)
+        c = next(i)
+        if c != ']': print(f"Parse error: expected ']' but found '{c}'.")
+        return SnailPair(a,b), last
+    else:
+        print(f"Parse error: unexpected '{c}'.")
+
+# Parse a SnailPair from a string.
+def parsestr(s):
+    p, _ = parse(iter(s))
+    return p
+
+# Read data
+data = [line.strip() for line in open('input.txt')]    
+n = len(data)
+
+# Part 1
+s = reduce(lambda a,b:a+b, map(parsestr, data))
+print(s.magnitude())
+
+# Part 2, unfortunately we have to reparse every number a lot of times since
+# x + y also changes x and y.
+print(max((parsestr(data[i])+parsestr(data[j])).magnitude() for i,j in product(range(n), range(n)) if i != j))
