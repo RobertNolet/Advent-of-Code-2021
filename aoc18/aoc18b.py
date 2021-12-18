@@ -9,6 +9,7 @@ Created on Sat Dec 18 14:00:02 2021
 import functools
 from itertools import product
 
+# Make list of value, magnitude and depths for all numbers in a line of input.
 def parse(s):
     result = []
     depth = 0
@@ -25,33 +26,39 @@ def parse(s):
         if c.isnumeric(): result.append([int(c), m, depth])
     return result
 
-def explode(vds):
-    for i, (v, m, d) in enumerate(vds):
+# Explode first pair at depth 5
+def explode(vmds):
+    for i, (v, m, d) in enumerate(vmds):
         if d == 5:
-            vds[i] = [0, m // 3, d-1]
-            if i > 0: vds[i-1][0] += v
-            v, m, d = vds.pop(i+1)
-            if i+1 < len(vds): vds[i+1][0] += v
+            vmds[i] = [0, m // 3, d-1]
+            if i > 0: vmds[i-1][0] += v
+            v, m, d = vmds.pop(i+1)
+            if i+1 < len(vmds): vmds[i+1][0] += v
             return True
     return False
 
-def split(vds):
-    for i, (v,m,d) in enumerate(vds):
+# Split first value greater than 9
+def split(vmds):
+    for i, (v,m,d) in enumerate(vmds):
         if v > 9:
-            vds[i] = [v-v//2, m*2, d+1]
-            vds.insert(i,[v//2, m*3, d+1])
+            vmds[i] = [v-v//2, m*2, d+1]
+            vmds.insert(i,[v//2, m*3, d+1])
             return True
     return False
 
-def reduce(vds):
-    while (explode(vds) or split(vds)): pass
-    return vds
+# Apply explodes or splits until neither does anything
+def reduce(vmds):
+    while (explode(vmds) or split(vmds)): pass
+    return vmds
 
-def add(vds1, vds2):
-    return reduce([[v, 3*m, d+1] for v,m,d in vds1]+[[v, 2*m, d+1] for v,m,d in vds2])
+# Add two lists of values, magnitudes and depths, adjust for the
+# new depth level.
+def add(vmds1, vmds2):
+    return reduce([[v, 3*m, d+1] for v,m,d in vmds1]+[[v, 2*m, d+1] for v,m,d in vmds2])
 
-def magnitude(vds):
-    return sum(m*v for (v, m, d) in vds)
+# Calculate total magnitude
+def magnitude(vmds):
+    return sum(m*v for (v, m, d) in vmds)
     
 data = [parse(line.strip()) for line in open('input.txt')]
 
