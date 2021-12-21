@@ -27,7 +27,9 @@ print(min(s)*n)
 # obtain this roll.
 rolls = {3:1, 4:3, 5:6, 6:7, 7:6, 8:3, 9:1}
 
+cache = {}
 def play(p, s = [0,0], m = 0):
+    if (*p, *s, m) in cache: return cache[(*p,*s,m)]
     wins = [0,0]
     for d, v in rolls.items():
         oldp = p[m]
@@ -40,6 +42,7 @@ def play(p, s = [0,0], m = 0):
             wins[1] += v*w1
         s[m] -= p[m]
         p[m] = oldp
+    cache[(*p,*s,m)] = wins
     return wins
 
 print(max(play([9,3])))
